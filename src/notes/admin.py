@@ -4,7 +4,6 @@ from .models import *
 
 admin.site.register(Note)
 admin.site.register(Reminder)
-admin.site.register(Trash)
 admin.site.register(Image)
 admin.site.register(Item)
 admin.site.register(Label)

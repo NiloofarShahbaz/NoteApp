@@ -5,13 +5,6 @@ from django.utils import timezone
 from django.conf import settings
 
 
-class Trash(models.Model):
-    user = models.OneToOneField(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return str(self.user) + ' Trash'
-
-
 class Label(models.Model):
     text = models.CharField(max_length=150)
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -43,10 +36,9 @@ class Note(models.Model):
     order = models.IntegerField(null=True, blank=True)
     new = models.BooleanField(default=False)
     color = models.CharField(max_length=1, choices=COLORS, default=white)
-    user = models.ManyToManyField(to=settings.AUTH_USER_MODEL)
-    label = models.ManyToManyField(to=Label, blank=True)
-    trash = models.ForeignKey(to=Trash, on_delete=models.PROTECT, blank=True, null=True)
-    delete_time = models.DateTimeField(blank=True, null=True)
+    users = models.ManyToManyField(to=settings.AUTH_USER_MODEL)
+    labels = models.ManyToManyField(to=Label, blank=True)
+    trash_delete_time = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         ordering = ['order', 'pk']

@@ -5,5 +5,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('rest_auth.urls')),
     path('api/auth/register/', include('rest_auth.registration.urls')),
-
+    path('api/', include('src.notes.urls')),
 ]

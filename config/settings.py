@@ -18,7 +18,6 @@ APPS_DIR = ROOT_DIR.path('src')
 env = environ.Env()
 env.read_env(env_file=ROOT_DIR('.env'))
 
-
 # Development settings
 
 SECRET_KEY = env.str('DJANGO_SECRET_KEY', default='ASecretKey')
@@ -26,7 +25,6 @@ SECRET_KEY = env.str('DJANGO_SECRET_KEY', default='ASecretKey')
 DEBUG = env.bool('DJANGO_DEBUG', default=False)
 
 ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default=['127.0.0.1', 'localhost'])
-
 
 # Application definition
 
@@ -60,9 +58,12 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 SITE_ID = 1
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
+    'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
-    ],
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+    ),
 
 }
 
