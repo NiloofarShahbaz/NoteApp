@@ -36,7 +36,8 @@ class Note(models.Model):
     order = models.IntegerField(null=True, blank=True)
     new = models.BooleanField(default=False)
     color = models.CharField(max_length=1, choices=COLORS, default=white)
-    users = models.ManyToManyField(to=settings.AUTH_USER_MODEL)
+    owner = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    collaborators = models.ManyToManyField(to=settings.AUTH_USER_MODEL, related_name='collaborating_notes', blank=True)
     labels = models.ManyToManyField(to=Label, blank=True)
     trash_delete_time = models.DateTimeField(blank=True, null=True)
 
