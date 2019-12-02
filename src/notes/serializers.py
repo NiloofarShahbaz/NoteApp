@@ -12,3 +12,6 @@ class NoteSerializer(serializers.ModelSerializer):
         model = Note
         exclude = ['trash_delete_time', ]
 
+    def save(self, **kwargs):
+        kwargs["owner"] = self.context['request'].user
+        super().save(**kwargs)

@@ -14,9 +14,6 @@ class NoteListCreateView(generics.ListCreateAPIView):
         return Note.objects.filter(Q(owner=self.request.user) | Q(collaborators__in=[self.request.user, ]),
                                    is_archive=False, trash_delete_time=None)
 
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
-
 
 class NoteRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     permission_classes = (permissions.IsAuthenticated,)
