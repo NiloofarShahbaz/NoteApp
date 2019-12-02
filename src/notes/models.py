@@ -31,10 +31,9 @@ class Note(models.Model):
         (violet, 'Violet'),
     )
     title = models.CharField(max_length=950, blank=True, null=True)
-    archive = models.BooleanField(default=False)
-    pin = models.BooleanField(default=False)
+    is_archive = models.BooleanField(default=False)
+    is_pin = models.BooleanField(default=False)
     order = models.IntegerField(null=True, blank=True)
-    new = models.BooleanField(default=False)
     color = models.CharField(max_length=1, choices=COLORS, default=white)
     owner = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     collaborators = models.ManyToManyField(to=settings.AUTH_USER_MODEL, related_name='collaborating_notes', blank=True)
@@ -42,13 +41,13 @@ class Note(models.Model):
     trash_delete_time = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        ordering = ['order', 'pk']
+        ordering = ('order', 'pk')
 
     def __str__(self):
         return ' Note ' + str(self.pk)
 
 
-class Item(models.Model):
+class NoteContent(models.Model):
     done = 'T'
     not_done = 'F'
     is_not_checklist = 'N'
@@ -59,9 +58,13 @@ class Item(models.Model):
         (not_done, 'Not Done'),
     )
 
+    order = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=is_not_checklist)
     text = models.CharField(max_length=950)
     note = models.ForeignKey(to=Note, on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ('order', 'pk')
 
     def __str__(self):
         return str(self.note) + ' Item ' + str(self.pk)
