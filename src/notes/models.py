@@ -5,13 +5,20 @@ from django.conf import settings
 
 class Label(models.Model):
     text = models.CharField(max_length=150)
-    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def __str__(self):
-        return str(self.user) + ' Label ' + self.pk
+        return ' Label ' + self.pk
 
 
 class Note(models.Model):
+    title = models.CharField(max_length=950, blank=True, null=True)
+    users = models.ManyToManyField(to=settings.AUTH_USER_MODEL, through='NoteConfig')
+
+    def __str__(self):
+        return ' Note ' + str(self.pk)
+
+
+class NoteConfig(models.Model):
     white = 'W'
     red = 'R'
     blue = 'B'
@@ -28,13 +35,13 @@ class Note(models.Model):
         (pink, 'Pink'),
         (violet, 'Violet'),
     )
-    title = models.CharField(max_length=950, blank=True, null=True)
     is_archive = models.BooleanField(default=False)
     is_pin = models.BooleanField(default=False)
     order = models.IntegerField(null=True, blank=True)
     color = models.CharField(max_length=1, choices=COLORS, default=white)
-    owner = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    collaborators = models.ManyToManyField(to=settings.AUTH_USER_MODEL, related_name='collaborating_notes', blank=True)
+    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    note = models.ForeignKey(to=Note, on_delete=models.CASCADE)
+    is_owner = models.BooleanField(default=False)
     labels = models.ManyToManyField(to=Label, blank=True)
     trash_delete_time = models.DateTimeField(blank=True, null=True)
 
@@ -42,7 +49,7 @@ class Note(models.Model):
         ordering = ('order', 'pk')
 
     def __str__(self):
-        return ' Note ' + str(self.pk)
+        return 'Note Config note ' + str(self.note.id) + ' user ' + str(self.user.id)
 
 
 class NoteContent(models.Model):
@@ -96,4 +103,3 @@ class Reminder(models.Model):
 
     def __str__(self):
         return str(self.note) + ' Reminder ' + str(self.pk)
-
