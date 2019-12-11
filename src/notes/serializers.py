@@ -1,17 +1,77 @@
 from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
 
-from .models import Note
+from .models import *
+
+
+class LabelSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        note_pk = self.context['view'].kwargs['pk']
+        setting = get_object_or_404(Setting, note=note_pk, user=self.context['request'].user,
+                                    trash_delete_time=None)
+        label = Label.objects.create(**validated_data)
+        SettingLabel.objects.create(label=label, setting=setting)
+        return label
+
+    class Meta:
+        model = Label
+        fields = ('id', 'text',)
+
+
+class SettingSerializer(serializers.ModelSerializer):
+    labels = LabelSerializer(many=True, read_only=True)
+    is_owner = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = Setting
+        exclude = ('user', 'trash_delete_time', 'note')
+
+
+class SettingLabelSerializer(serializers.ModelSerializer):
+    label = LabelSerializer(read_only=True)
+    setting = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    def create(self, validated_data):
+        note_pk = self.context['view'].kwargs['pk']
+        label_pk = self.context['view'].kwargs['label_pk']
+        user = self.context['request'].user
+        setting = get_object_or_404(Setting, note=note_pk, user=user, trash_delete_time=None)
+        label = Label.objects.get(pk=label_pk, setting__user=user)
+        setting_label = SettingLabel.objects.create(label=label, setting=setting)
+        return setting_label
+
+    class Meta:
+        model = SettingLabel
+        fields = ('id', 'label', 'setting')
+
+
+class ContentSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        note = get_object_or_404(Note, pk=self.context['view'].kwargs['pk'], setting__trash_delete_time=None,
+                                 setting__user=self.context['request'].user)
+
+        return Content.objects.create(note=note, **validated_data)
+
+    class Meta:
+        model = Content
+        fields = ('pk', 'order', 'status', 'text')
 
 
 class NoteSerializer(serializers.ModelSerializer):
-    owner = serializers.PrimaryKeyRelatedField(read_only=True)
-    collaborators = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    labels = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    content_set = ContentSerializer(many=True, read_only=True)
+    setting_set = serializers.SerializerMethodField()
+
+    def get_setting_set(self, obj):
+        setting_set = Setting.objects.filter(user=self.context['request'].user, note=obj)
+        serializer = SettingSerializer(setting_set, many=True)
+        return serializer.data
+
+    def create(self, validated_data):
+        note = Note.objects.create(**validated_data)
+        # create a note setting for this user(which is the owner)
+        Setting.objects.create(note=note, user=self.context['request'].user, is_owner=True)
+        return note
 
     class Meta:
         model = Note
-        exclude = ['trash_delete_time', ]
-
-    def save(self, **kwargs):
-        kwargs["owner"] = self.context['request'].user
-        super().save(**kwargs)
+        fields = ('id', 'title', 'content_set', 'users', 'setting_set')

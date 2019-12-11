@@ -7,18 +7,18 @@ class Label(models.Model):
     text = models.CharField(max_length=150)
 
     def __str__(self):
-        return ' Label ' + self.pk
+        return ' Label ' + str(self.pk)
 
 
 class Note(models.Model):
     title = models.CharField(max_length=950, blank=True, null=True)
-    users = models.ManyToManyField(to=settings.AUTH_USER_MODEL, through='NoteConfig')
+    users = models.ManyToManyField(to=settings.AUTH_USER_MODEL, through='Setting')
 
     def __str__(self):
         return ' Note ' + str(self.pk)
 
 
-class NoteConfig(models.Model):
+class Setting(models.Model):
     white = 'W'
     red = 'R'
     blue = 'B'
@@ -35,36 +35,48 @@ class NoteConfig(models.Model):
         (pink, 'Pink'),
         (violet, 'Violet'),
     )
-    is_archive = models.BooleanField(default=False)
-    is_pin = models.BooleanField(default=False)
+    is_archived = models.BooleanField(default=False)
+    is_pinned = models.BooleanField(default=False)
     order = models.IntegerField(null=True, blank=True)
     color = models.CharField(max_length=1, choices=COLORS, default=white)
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     note = models.ForeignKey(to=Note, on_delete=models.CASCADE)
     is_owner = models.BooleanField(default=False)
-    labels = models.ManyToManyField(to=Label, blank=True)
+    labels = models.ManyToManyField(to=Label, through='SettingLabel', blank=True)
     trash_delete_time = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         ordering = ('order', 'pk')
+        unique_together = ('user', 'note')
 
     def __str__(self):
-        return 'Note Config note ' + str(self.note.id) + ' user ' + str(self.user.id)
+        return 'Setting: note ' + str(self.note.id) + ', user ' + str(self.user.id)
 
 
-class NoteContent(models.Model):
+class SettingLabel(models.Model):
+    label = models.ForeignKey(to=Label, on_delete=models.CASCADE)
+    setting = models.ForeignKey(to=Setting, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('label', 'setting')
+
+    def __str__(self):
+        return 'Setting Label: setting ' + str(self.setting.id) + ', label ' + str(self.label.id)
+
+
+class Content(models.Model):
     done = 'T'
     not_done = 'F'
-    is_not_checklist = 'N'
+    hidden = 'H'
 
     STATUS_CHOICES = (
-        (is_not_checklist, 'Is Not A Checklist'),
+        (hidden, 'Hidden'),
         (done, 'Done'),
         (not_done, 'Not Done'),
     )
 
     order = models.IntegerField(null=True, blank=True)
-    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=is_not_checklist)
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=hidden)
     text = models.CharField(max_length=950)
     note = models.ForeignKey(to=Note, on_delete=models.CASCADE)
 
@@ -72,7 +84,7 @@ class NoteContent(models.Model):
         ordering = ('order', 'pk')
 
     def __str__(self):
-        return str(self.note) + ' Item ' + str(self.pk)
+        return 'Content: ' + str(self.note) + ', Item ' + str(self.pk)
 
 
 class Image(models.Model):
