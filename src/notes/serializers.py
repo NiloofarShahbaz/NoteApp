@@ -1,5 +1,8 @@
+from django.utils.translation import gettext_lazy as _
+
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
+from rest_framework.exceptions import ValidationError
 
 from .models import *
 
@@ -36,9 +39,20 @@ class SettingLabelSerializer(serializers.ModelSerializer):
         label_pk = self.context['view'].kwargs['label_pk']
         user = self.context['request'].user
         setting = get_object_or_404(Setting, note=note_pk, user=user, trash_delete_time=None)
-        label = Label.objects.get(pk=label_pk, setting__user=user)
-        setting_label = SettingLabel.objects.create(label=label, setting=setting)
+        setting_label = SettingLabel.objects.create(label_id=label_pk, setting=setting)
         return setting_label
+
+    def validate(self, attrs):
+        user = self.context['request'].user
+        note_pk = self.context['view'].kwargs['pk']
+        label_pk = self.context['view'].kwargs['label_pk']
+
+        setting_label = SettingLabel.objects.filter(setting__note_id=note_pk, label_id=label_pk,
+                                                    setting__user_id=user, setting__trash_delete_time=None)
+
+        if setting_label:
+            raise ValidationError(_('The fields {label, setting} must make a unique set.'), code='unique')
+        return attrs
 
     class Meta:
         model = SettingLabel

@@ -15,6 +15,6 @@ urlpatterns = [
     path('notes/<int:pk>/label/', LabelCreateView.as_view(), name='label-create'),
     path('notes/<int:pk>/label/<int:label_pk>/', LabelUpdateView.as_view(), name='label-update'),
 
-    path('notes/<int:pk>/label/add/<int:label_pk>/', SettingLabelCreate.as_view(), name='setting-add-label'),
+    path('notes/<int:pk>/label/<int:label_pk>/add/', SettingLabelCreate.as_view(), name='setting-add-label'),
 
 ]
