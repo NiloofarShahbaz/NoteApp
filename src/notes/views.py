@@ -1,8 +1,5 @@
-from django.core.exceptions import MultipleObjectsReturned
-
 from rest_framework import generics
 from rest_framework import permissions
-from rest_framework.response import Response
 
 from .serializers import *
 
@@ -60,7 +57,7 @@ class ContentUpdateView(generics.UpdateAPIView):
 
 class SettingUpdateView(generics.UpdateAPIView):
     """
-    model: Note Setting
+    model: Setting
     -Update input: is_archived, is_pinned, order, color
     """
     permission_classes = (permissions.IsAuthenticated,)

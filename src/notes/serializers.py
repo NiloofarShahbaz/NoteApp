@@ -10,8 +10,7 @@ from .models import *
 class LabelSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         note_pk = self.context['view'].kwargs['pk']
-        setting = get_object_or_404(Setting, note=note_pk, user=self.context['request'].user,
-                                    trash_delete_time=None)
+        setting = get_object_or_404(Setting, note=note_pk, user=self.context['request'].user, trash_delete_time=None)
         label = Label.objects.create(**validated_data)
         SettingLabel.objects.create(label=label, setting=setting)
         return label
@@ -47,8 +46,8 @@ class SettingLabelSerializer(serializers.ModelSerializer):
         note_pk = self.context['view'].kwargs['pk']
         label_pk = self.context['view'].kwargs['label_pk']
 
-        setting_label = SettingLabel.objects.filter(setting__note_id=note_pk, label_id=label_pk,
-                                                    setting__user_id=user, setting__trash_delete_time=None)
+        setting_label = SettingLabel.objects.filter(setting__note_id=note_pk, label_id=label_pk, setting__user_id=user,
+                                                    setting__trash_delete_time=None)
 
         if setting_label:
             raise ValidationError(_('The fields {label, setting} must make a unique set.'), code='unique')

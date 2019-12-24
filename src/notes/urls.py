@@ -1,4 +1,3 @@
-from django.contrib import admin
 from django.urls import path
 from .views import *
 
@@ -16,5 +15,4 @@ urlpatterns = [
     path('notes/<int:pk>/label/<int:label_pk>/', LabelUpdateView.as_view(), name='label-update'),
 
     path('notes/<int:pk>/label/<int:label_pk>/add/', SettingLabelCreate.as_view(), name='setting-add-label'),
-
 ]
