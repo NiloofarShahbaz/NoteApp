@@ -1,4 +1,5 @@
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
@@ -27,6 +28,20 @@ class SettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Setting
         exclude = ('user', 'trash_delete_time', 'note')
+
+
+class SettingCreateOnlySerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(slug_field='email', queryset=get_user_model().objects.all())
+
+    def create(self, validated_data):
+        note_pk = self.context['view'].kwargs['pk']
+        user = get_object_or_404(get_user_model(), pk=validated_data['user'].pk)
+        setting = Setting.objects.create(user_id=user.id, note_id=note_pk)
+        return setting
+
+    class Meta:
+        model = Setting
+        fields = ('user', )
 
 
 class SettingLabelSerializer(serializers.ModelSerializer):

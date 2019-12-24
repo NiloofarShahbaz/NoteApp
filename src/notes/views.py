@@ -74,6 +74,16 @@ class SettingUpdateView(generics.UpdateAPIView):
         return obj
 
 
+class SettingAddCollaborator(generics.CreateAPIView):
+    """
+    model: Setting
+    Adds a collaborator to note
+    -Create
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = SettingCreateOnlySerializer
+
+
 class LabelListView(generics.ListAPIView):
     """
     model: Label

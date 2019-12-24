@@ -9,6 +9,7 @@ urlpatterns = [
     path('notes/<int:pk>/contents/<int:content_pk>/', ContentUpdateView.as_view(), name="content-update"),
 
     path('notes/<int:pk>/setting/', SettingUpdateView.as_view(), name='setting-update'),
+    path('notes/<int:pk>/setting/collaborator/', SettingAddCollaborator.as_view(), name='setting-add-collaborator'),
 
     path('labels/', LabelListView.as_view(), name='label-list'),
     path('notes/<int:pk>/label/', LabelCreateView.as_view(), name='label-create'),
