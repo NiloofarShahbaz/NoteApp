@@ -39,6 +39,14 @@ class SettingCreateOnlySerializer(serializers.ModelSerializer):
         setting = Setting.objects.create(user_id=user.id, note_id=note_pk)
         return setting
 
+    def validate(self, attrs):
+        note_pk = self.context['view'].kwargs['pk']
+        user = get_object_or_404(get_user_model(), username=attrs['user'])
+        setting = Setting.objects.filter(user=user, note_id=note_pk).exists()
+        if setting:
+            raise ValidationError(_('The fields {user, note} must make a unique set.'), code='unique')
+        return attrs
+
     class Meta:
         model = Setting
         fields = ('user', )

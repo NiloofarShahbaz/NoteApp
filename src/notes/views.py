@@ -1,7 +1,7 @@
 from rest_framework import generics
-from rest_framework import permissions
 
 from .serializers import *
+from .permissions import *
 
 
 class NoteListCreateView(generics.ListCreateAPIView):
@@ -21,10 +21,11 @@ class NoteListCreateView(generics.ListCreateAPIView):
 class NoteRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     """
     model : Note
+    permission : HasNote
     -Retrieve
     -Update input: title
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, HasNote)
     serializer_class = NoteSerializer
 
     def get_queryset(self):
@@ -35,18 +36,20 @@ class NoteRetrieveUpdateView(generics.RetrieveUpdateAPIView):
 class ContentCreateView(generics.CreateAPIView):
     """
     model : Content
+    permission : HasNote
     -Create input: text, status(H,T,F)(optional)
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, HasNote)
     serializer_class = ContentSerializer
 
 
 class ContentUpdateView(generics.UpdateAPIView):
     """
     model: Content
+    permission : HasNote
     -Update input: text, status(H,T,F)
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, HasNote)
     serializer_class = ContentSerializer
     lookup_url_kwarg = 'content_pk'
 
@@ -58,9 +61,10 @@ class ContentUpdateView(generics.UpdateAPIView):
 class SettingUpdateView(generics.UpdateAPIView):
     """
     model: Setting
+    permission : HasNote
     -Update input: is_archived, is_pinned, order, color
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, HasNote)
     serializer_class = SettingSerializer
 
     def get_queryset(self):
@@ -77,40 +81,46 @@ class SettingUpdateView(generics.UpdateAPIView):
 class SettingAddCollaborator(generics.CreateAPIView):
     """
     model: Setting
+    permission : HasNote
     Adds a collaborator to note
-    -Create
+    -Create input: user_email
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, HasNote)
     serializer_class = SettingCreateOnlySerializer
 
 
 class LabelListView(generics.ListAPIView):
     """
+    url: /api/labels/
     model: Label
     -List
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, )
     serializer_class = LabelSerializer
 
     def get_queryset(self):
-        return Label.objects.filter(setting__user=self.request.user)
+        return Label.objects.filter(setting__user=self.request.user).distinct()
 
 
 class LabelCreateView(generics.CreateAPIView):
     """
+    url: /api/notes/<int:pk>/labels/
     model: Label
+    permission: HasNote
     -Create input: text
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, HasNote)
     serializer_class = LabelSerializer
 
 
 class LabelUpdateView(generics.UpdateAPIView):
     """
+    url: /api/notes/<int:pk>/label/<int:label_pk>/
     model: Label
+    permission: HasNote, HasLabel
     -Update input: text
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, HasNote, HasLabel)
     serializer_class = LabelSerializer
     lookup_url_kwarg = 'label_pk'
 
@@ -122,7 +132,9 @@ class LabelUpdateView(generics.UpdateAPIView):
 class SettingLabelCreate(generics.CreateAPIView):
     """
     Adds a specific label to user's note of choice
+    url : /api/notes/<int:pk>/labels/<int:label_pk>/add/
+    permission : HasNote, HasLabel
     -Create
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, HasNote, HasLabel)
     serializer_class = SettingLabelSerializer

@@ -12,8 +12,8 @@ urlpatterns = [
     path('notes/<int:pk>/setting/collaborator/', SettingAddCollaborator.as_view(), name='setting-add-collaborator'),
 
     path('labels/', LabelListView.as_view(), name='label-list'),
-    path('notes/<int:pk>/label/', LabelCreateView.as_view(), name='label-create'),
-    path('notes/<int:pk>/label/<int:label_pk>/', LabelUpdateView.as_view(), name='label-update'),
+    path('notes/<int:pk>/labels/', LabelCreateView.as_view(), name='label-create'),
+    path('notes/<int:pk>/labels/<int:label_pk>/', LabelUpdateView.as_view(), name='label-update'),
 
-    path('notes/<int:pk>/label/<int:label_pk>/add/', SettingLabelCreate.as_view(), name='setting-add-label'),
+    path('notes/<int:pk>/labels/<int:label_pk>/add/', SettingLabelCreate.as_view(), name='setting-add-label'),
 ]
