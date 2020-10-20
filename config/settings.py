@@ -101,7 +101,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': env.str('DB_NAME', default='noteapp'),
-        'USER': env.str('DB_NAME', default='adminuser'),
+        'USER': env.str('DB_NAME', default='admin'),
         'PASSWORD': env.str('DB_PASS', default='12345678'),
         'HOST': env.str('DB_HOST', default='localhost'),
         'PORT': ''
