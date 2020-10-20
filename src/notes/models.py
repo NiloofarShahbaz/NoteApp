@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from django.conf import settings
+from django.contrib.auth import get_user_model
 
 
 class Label(models.Model):
@@ -12,7 +12,7 @@ class Label(models.Model):
 
 class Note(models.Model):
     title = models.CharField(max_length=950, blank=True, null=True)
-    users = models.ManyToManyField(to=settings.AUTH_USER_MODEL, through='Setting')
+    users = models.ManyToManyField(to=get_user_model(), through='Setting')
 
     def __str__(self):
         return ' Note ' + str(self.pk)
@@ -39,7 +39,7 @@ class Setting(models.Model):
     is_pinned = models.BooleanField(default=False)
     order = models.IntegerField(null=True, blank=True)
     color = models.CharField(max_length=1, choices=COLORS, default=white)
-    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE)
     note = models.ForeignKey(to=Note, on_delete=models.CASCADE)
     is_owner = models.BooleanField(default=False)
     labels = models.ManyToManyField(to=Label, through='SettingLabel', blank=True)

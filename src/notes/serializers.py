@@ -2,6 +2,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
+from rest_framework import validators
 from rest_framework.generics import get_object_or_404
 from rest_framework.exceptions import ValidationError
 
@@ -31,25 +32,13 @@ class SettingSerializer(serializers.ModelSerializer):
 
 
 class SettingCreateOnlySerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(slug_field='email', queryset=get_user_model().objects.all())
-
-    def create(self, validated_data):
-        note_pk = self.context['view'].kwargs['pk']
-        user = get_object_or_404(get_user_model(), pk=validated_data['user'].pk)
-        setting = Setting.objects.create(user_id=user.id, note_id=note_pk)
-        return setting
-
-    def validate(self, attrs):
-        note_pk = self.context['view'].kwargs['pk']
-        user = get_object_or_404(get_user_model(), username=attrs['user'])
-        setting = Setting.objects.filter(user=user, note_id=note_pk).exists()
-        if setting:
-            raise ValidationError(_('The fields {user, note} must make a unique set.'), code='unique')
-        return attrs
+    user = serializers.PrimaryKeyRelatedField(queryset=get_user_model().objects.all(), write_only=True)
+    note = serializers.PrimaryKeyRelatedField(queryset=Note.objects.all(), write_only=True)
 
     class Meta:
         model = Setting
-        fields = ('user', )
+        fields = ('user', 'note', 'is_owner')
+        validators = [validators.UniqueTogetherValidator(queryset=Setting.objects.all(), fields=['note', 'user'])]
 
 
 class SettingLabelSerializer(serializers.ModelSerializer):
@@ -95,19 +84,13 @@ class ContentSerializer(serializers.ModelSerializer):
 
 class NoteSerializer(serializers.ModelSerializer):
     content_set = ContentSerializer(many=True, read_only=True)
-    setting_set = serializers.SerializerMethodField()
+    setting = serializers.SerializerMethodField()
 
-    def get_setting_set(self, obj):
+    def get_setting(self, obj):
         setting_set = Setting.objects.filter(user=self.context['request'].user, note=obj)
         serializer = SettingSerializer(setting_set, many=True)
         return serializer.data
 
-    def create(self, validated_data):
-        note = Note.objects.create(**validated_data)
-        # create a note setting for this user(which is the owner)
-        Setting.objects.create(note=note, user=self.context['request'].user, is_owner=True)
-        return note
-
     class Meta:
         model = Note
-        fields = ('id', 'title', 'content_set', 'users', 'setting_set')
+        fields = ('id', 'title', 'content_set', 'users', 'setting')
